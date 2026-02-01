@@ -83,7 +83,7 @@ CheckPointExam/
 │       └── terraform-apply.yml
 │
 ├── monitoring/              # Monitoring setup
-│   └── prometheus-grafana/  # Prometheus & Grafana configs
+│   └── cloudwatch/          # CloudWatch monitoring configuration
 │
 └── scripts/                 # Utility scripts
     └── setup.sh            # Setup script
@@ -126,9 +126,8 @@ CheckPointExam/
 
 ### Monitoring
 
-- **Prometheus**: Metrics collection
-- **Grafana**: Visualization dashboards
-- **CloudWatch**: Logs and ECS metrics
+- **CloudWatch**: Alarms, logs, and metrics (via terraform/monitoring.tf)
+- **Prometheus Metrics**: Application metrics at `/metrics` endpoint
 
 ## Best Practices Implemented
 
@@ -179,9 +178,13 @@ Quick deployment:
 
 ## Monitoring
 
-- **Prometheus**: `http://localhost:9090` (local)
-- **Grafana**: `http://localhost:3000` (local)
-- **CloudWatch Logs**: `/ecs/devops-exam/api-service` and `/ecs/devops-exam/sqs-consumer`
+- **CloudWatch**: Centralized monitoring with alarms and logs
+  - Alarms: SNS alerts for ALB, ECS, and SQS metrics
+  - Logs: `/ecs/{project}/{service}` log groups
+  - Metrics: Application and infrastructure metrics
+- **Application Metrics**: Prometheus metrics exposed at `/metrics` endpoint
+
+See `MONITORING_README.md` for detailed monitoring documentation.
 
 ## Cost Optimization
 

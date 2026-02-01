@@ -54,7 +54,7 @@ This project implements a complete DevOps solution with two microservices deploy
 │       ├── cd-sqs-consumer.yml
 │       └── terraform-apply.yml
 └── monitoring/
-    └── prometheus-grafana/
+    └── cloudwatch/          # CloudWatch monitoring configuration
 ```
 
 ## Prerequisites
@@ -252,14 +252,23 @@ curl -X POST http://${ALB_ENDPOINT}/api/email \
 
 ## Monitoring
 
-### Access Prometheus
+### CloudWatch Monitoring
+Monitoring is configured in `terraform/monitoring.tf` with:
+- **SNS Topic** for alert notifications
+- **CloudWatch Alarms** for ALB, ECS, and SQS metrics
+- **CloudWatch Log Groups** for centralized logging
+- **Configurable thresholds** via Terraform variables
 
-Prometheus is deployed as a sidecar container. Access metrics at:
-- `http://<service-endpoint>:9090/metrics`
+### Application Metrics
+Microservices expose Prometheus metrics at `/metrics` endpoint:
+- API Service: `http://<alb-endpoint>/metrics`
+- SQS Consumer: Metrics available via CloudWatch Container Insights
 
-### Access Grafana
+### Access CloudWatch
+- **Console**: https://console.aws.amazon.com/cloudwatch/
+- **CLI**: `aws cloudwatch describe-alarms`
 
-Grafana dashboard URL will be available in Terraform outputs after deployment.
+See `MONITORING_README.md` for detailed monitoring documentation and AWS CLI commands.
 
 ## Cleanup
 
@@ -277,7 +286,7 @@ terraform destroy -var-file=environments/prod/terraform.tfvars
 3. **Security**: Secrets stored in SSM Parameter Store, IAM roles with least privilege
 4. **CI/CD**: Automated build and deployment via GitHub Actions
 5. **Testing**: Unit tests for both microservices
-6. **Monitoring**: Prometheus metrics and Grafana dashboards
+6. **Monitoring**: CloudWatch metrics, alarms, and centralized logging
 7. **Error Handling**: Comprehensive error handling and logging
 8. **Documentation**: Detailed README and code comments
 
