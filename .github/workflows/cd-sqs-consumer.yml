@@ -14,12 +14,6 @@ on:
         required: false
         default: 'latest'
 
-env:
-  AWS_REGION: us-west-1
-  ECS_CLUSTER: devops-exam-cluster
-  ECS_SERVICE: devops-exam-sqs-consumer
-  ECR_REPOSITORY: devops-exam-sqs-consumer
-
 jobs:
   deploy:
     name: Deploy to ECS
@@ -35,7 +29,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Login to Amazon ECR
         id: login-ecr
@@ -44,7 +38,7 @@ jobs:
       - name: Get ECR repository URI
         id: ecr-repo
         run: |
-          ECR_URI=$(aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --query 'repositories[0].repositoryUri' --output text)
+          ECR_URI=$(aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }} --query 'repositories[0].repositoryUri' --output text)
           echo "repository_uri=$ECR_URI" >> $GITHUB_OUTPUT
           echo "Repository URI: $ECR_URI"
       
@@ -62,7 +56,7 @@ jobs:
       - name: Download task definition
         run: |
           aws ecs describe-task-definition \
-            --task-definition ${{ env.ECS_SERVICE }} \
+            --task-definition ${{ secrets.ECS_SERVICE_SQS_CONSUMER_NAME }} \
             --query taskDefinition > task-definition.json
       
       - name: Update task definition with new image
@@ -77,15 +71,15 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
+          service: ${{ secrets.ECS_SERVICE_SQS_CONSUMER_NAME }}
+          cluster: ${{ secrets.ECS_CLUSTER_NAME }}
           wait-for-service-stability: true
       
       - name: Verify deployment
         run: |
           echo "Deployment completed successfully"
           aws ecs describe-services \
-            --cluster ${{ env.ECS_CLUSTER }} \
-            --services ${{ env.ECS_SERVICE }} \
+            --cluster ${{ secrets.ECS_CLUSTER_NAME }} \
+            --services ${{ secrets.ECS_SERVICE_SQS_CONSUMER_NAME }} \
             --query 'services[0].[status,runningCount,desiredCount]' \
             --output table

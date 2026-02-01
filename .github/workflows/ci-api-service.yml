@@ -72,7 +72,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
+          aws-region: ${{ secrets.AWS_REGION }}
       
       - name: Login to Amazon ECR
         id: login-ecr
@@ -85,11 +85,11 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         working-directory: microservices/api-service
         run: |
-          docker build -t $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG .
-          docker tag $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
-          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG
-          docker push $ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:latest
-          echo "image=$ECR_REGISTRY/${{ env.ECR_REPOSITORY }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          docker build -t $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:$IMAGE_TAG .
+          docker tag $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:$IMAGE_TAG $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:latest
+          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:$IMAGE_TAG
+          docker push $ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:latest
+          echo "image=$ECR_REGISTRY/${{ secrets.ECR_REPOSITORY_API }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
       
       - name: Output image URI
         run: |
