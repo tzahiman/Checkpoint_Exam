@@ -2,9 +2,10 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
 *.tfvars
 !terraform.tfvars.example
+!**/terraform.tfvars.example
+!**/backend.s3.tfvars.example
 
 # Python
 __pycache__/
@@ -19,6 +20,7 @@ ENV/
 *.egg-info/
 dist/
 build/
+*cache*
 
 # IDE
 .vscode/

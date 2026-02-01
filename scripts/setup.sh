@@ -68,18 +68,24 @@ if [ ! -f "terraform/environments/prod/terraform.tfvars" ]; then
     echo "⚠️  Please edit terraform/environments/prod/terraform.tfvars with your configuration"
 fi
 
-# Initialize Terraform
-echo "🏗️  Initializing Terraform..."
+# Initialize Terraform (only if S3 backend is bootstrapped)
+echo "🏗️  Terraform..."
 cd terraform
-terraform init
+if [ -f "backend.s3.tfvars" ]; then
+    echo "Initializing Terraform with S3 backend..."
+    terraform init -reconfigure -backend-config=backend.s3.tfvars
+else
+    echo "⚠️  backend.s3.tfvars not found. Run from repo root: ./scripts/bootstrap-backend.sh"
+    echo "    (Requires: aws configure)"
+fi
 cd ..
 
 echo "✅ Setup complete!"
 echo ""
 echo "Next steps:"
-echo "1. Edit terraform/environments/prod/terraform.tfvars with your configuration"
-echo "2. Update terraform/backend.tf with your S3 bucket for state"
-echo "3. Configure AWS credentials: aws configure"
-echo "4. Deploy infrastructure: cd terraform && terraform apply"
-echo "5. Build and push Docker images to ECR"
-echo "6. Deploy services to ECS"
+echo "1. Configure AWS: aws configure"
+echo "2. Bootstrap S3 backend (one-time): ./scripts/bootstrap-backend.sh"
+echo "3. Init Terraform: cd terraform && terraform init -reconfigure -backend-config=backend.s3.tfvars"
+echo "4. Edit terraform/environments/prod/terraform.tfvars if needed"
+echo "5. Plan/Apply: terraform plan -var-file=environments/prod/terraform.tfvars && terraform apply -var-file=environments/prod/terraform.tfvars"
+echo "6. Build and push Docker images to ECR; deploy to ECS"

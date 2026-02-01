@@ -27,15 +27,25 @@ S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
 SQS_POLL_INTERVAL = int(os.getenv('SQS_POLL_INTERVAL', '30'))
 AWS_REGION = os.getenv('AWS_REGION', 'us-west-1')
 
-# Validate required environment variables
-if not SQS_QUEUE_URL:
-    raise ValueError("SQS_QUEUE_URL environment variable is required")
-if not S3_BUCKET_NAME:
-    raise ValueError("S3_BUCKET_NAME environment variable is required")
+# AWS clients (initialized lazily to allow testing)
+sqs_client = None
+s3_client = None
 
-# AWS clients
-sqs_client = boto3.client('sqs', region_name=AWS_REGION)
-s3_client = boto3.client('s3', region_name=AWS_REGION)
+
+def get_sqs_client():
+    """Get or create SQS client"""
+    global sqs_client
+    if sqs_client is None:
+        sqs_client = boto3.client('sqs', region_name=AWS_REGION)
+    return sqs_client
+
+
+def get_s3_client():
+    """Get or create S3 client"""
+    global s3_client
+    if s3_client is None:
+        s3_client = boto3.client('s3', region_name=AWS_REGION)
+    return s3_client
 
 # Prometheus metrics
 REGISTRY = CollectorRegistry()
@@ -111,7 +121,7 @@ def upload_to_s3(data: dict, s3_key: str) -> bool:
         json_data = json.dumps(data, indent=2)
         
         # Upload to S3
-        s3_client.put_object(
+        get_s3_client().put_object(
             Bucket=S3_BUCKET_NAME,
             Key=s3_key,
             Body=json_data.encode('utf-8'),
@@ -175,7 +185,7 @@ def delete_message(receipt_handle: str) -> bool:
     Delete processed message from SQS queue
     """
     try:
-        sqs_client.delete_message(
+        get_sqs_client().delete_message(
             QueueUrl=SQS_QUEUE_URL,
             ReceiptHandle=receipt_handle
         )
@@ -190,7 +200,7 @@ def get_queue_attributes() -> dict:
     Get SQS queue attributes for monitoring
     """
     try:
-        response = sqs_client.get_queue_attributes(
+        response = get_sqs_client().get_queue_attributes(
             QueueUrl=SQS_QUEUE_URL,
             AttributeNames=['ApproximateNumberOfMessages']
         )
@@ -206,7 +216,7 @@ def poll_sqs() -> list:
     Returns list of messages
     """
     try:
-        response = sqs_client.receive_message(
+        response = get_sqs_client().receive_message(
             QueueUrl=SQS_QUEUE_URL,
             MaxNumberOfMessages=10,
             WaitTimeSeconds=20,  # Long polling
@@ -230,6 +240,12 @@ def process_messages():
     """
     Main processing loop: poll SQS, process messages, upload to S3
     """
+    # Validate required environment variables
+    if not SQS_QUEUE_URL:
+        raise ValueError("SQS_QUEUE_URL environment variable is required")
+    if not S3_BUCKET_NAME:
+        raise ValueError("S3_BUCKET_NAME environment variable is required")
+    
     logger.info("Starting SQS consumer service")
     logger.info(f"SQS Queue URL: {SQS_QUEUE_URL}")
     logger.info(f"S3 Bucket: {S3_BUCKET_NAME}")

@@ -14,8 +14,8 @@ client = TestClient(app)
 
 @pytest.fixture
 def mock_ssm_token():
-    """Mock SSM token"""
-    return "test-token-12345"
+    """Mock SSM auth value (no real secrets in tests)"""
+    return "mock-auth-value"
 
 
 @pytest.fixture
@@ -71,9 +71,9 @@ class TestTokenValidation:
     
     @patch('app.main.ssm_client')
     def test_validate_token_failure(self, mock_ssm, mock_ssm_token):
-        """Test failed token validation"""
+        """Test failed auth validation"""
         mock_ssm.get_parameter.return_value = {
-            'Parameter': {'Value': 'different-token'}
+            'Parameter': {'Value': 'other-mock-value'}
         }
         
         result = validate_token(mock_ssm_token)
@@ -176,7 +176,7 @@ class TestEmailAPI:
         
         response = client.post("/api/email", json=valid_request)
         assert response.status_code == 401
-        assert "Invalid authentication token" in response.json()["detail"]
+        assert "Invalid authentication value" in response.json()["detail"]
     
     @patch('app.main.validate_token')
     @patch('app.main.validate_email_data')

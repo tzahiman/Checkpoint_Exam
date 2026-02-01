@@ -57,10 +57,10 @@ SQS_QUEUE_URL = os.getenv('SQS_QUEUE_URL')
 SSM_TOKEN_PARAMETER = os.getenv('SSM_TOKEN_PARAMETER', '/devops-exam/prod/api/token')
 AWS_REGION = os.getenv('AWS_REGION', 'us-west-1')
 
-# Cache for token (refresh every 5 minutes)
-_token_cache = None
-_token_cache_time = 0
-TOKEN_CACHE_TTL = 300  # 5 minutes
+# Cache for SSM auth value (refresh every 5 minutes); no secrets in code
+_auth_cache = None
+_auth_cache_time = 0
+AUTH_CACHE_TTL = 300  # 5 minutes
 
 
 class EmailData(BaseModel):
@@ -74,49 +74,48 @@ class EmailData(BaseModel):
 class EmailRequest(BaseModel):
     """Request model for email API"""
     data: EmailData
-    token: str = Field(..., min_length=1, description="Authentication token")
+    token: str = Field(..., min_length=1, description="Auth value (must match SSM)")
 
 
 def get_token_from_ssm() -> Optional[str]:
     """
-    Retrieve token from SSM Parameter Store with caching
+    Retrieve auth value from SSM Parameter Store with caching (value set in AWS Console/CLI).
     """
-    global _token_cache, _token_cache_time
+    global _auth_cache, _auth_cache_time
     import time
-    
+
     current_time = time.time()
-    
-    # Return cached token if still valid
-    if _token_cache and (current_time - _token_cache_time) < TOKEN_CACHE_TTL:
-        return _token_cache
-    
+
+    if _auth_cache and (current_time - _auth_cache_time) < AUTH_CACHE_TTL:
+        return _auth_cache
+
     try:
-        logger.info(f"Fetching token from SSM: {SSM_TOKEN_PARAMETER}")
+        logger.info(f"Fetching auth value from SSM: {SSM_TOKEN_PARAMETER}")
         response = ssm_client.get_parameter(
             Name=SSM_TOKEN_PARAMETER,
             WithDecryption=True
         )
-        _token_cache = response['Parameter']['Value']
-        _token_cache_time = current_time
-        logger.info("Token retrieved successfully from SSM")
-        return _token_cache
+        _auth_cache = response['Parameter']['Value']
+        _auth_cache_time = current_time
+        logger.info("Auth value retrieved from SSM")
+        return _auth_cache
     except ClientError as e:
-        logger.error(f"Error retrieving token from SSM: {e}")
+        logger.error(f"Error retrieving auth value from SSM: {e}")
         raise HTTPException(
             status_code=500,
-            detail="Failed to retrieve authentication token"
+            detail="Failed to retrieve authentication value"
         )
 
 
 def validate_token(token: str) -> bool:
     """
-    Validate the provided token against SSM Parameter Store
+    Validate the provided value against SSM Parameter Store (no secrets in code).
     """
     try:
-        expected_token = get_token_from_ssm()
-        return token == expected_token
+        expected = get_token_from_ssm()
+        return token == expected
     except Exception as e:
-        logger.error(f"Token validation error: {e}")
+        logger.error(f"Auth validation error: {e}")
         return False
 
 
@@ -214,13 +213,13 @@ async def receive_email(request: EmailRequest):
     """
     Receive email data, validate token and data, then publish to SQS
     """
-    # Validate token
+    # Validate auth value (from SSM; no secrets in code)
     if not validate_token(request.token):
         VALIDATION_ERROR_COUNT.labels(error_type='invalid_token').inc()
-        logger.warning("Invalid token provided")
+        logger.warning("Invalid auth value provided")
         raise HTTPException(
             status_code=401,
-            detail="Invalid authentication token"
+            detail="Invalid authentication value"
         )
     
     # Validate email data

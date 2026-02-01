@@ -49,9 +49,30 @@ jobs:
         working-directory: terraform
         run: terraform fmt -check
       
+      - name: Create backend config for S3
+        working-directory: terraform
+        env:
+          TF_STATE_BUCKET: ${{ secrets.TF_STATE_BUCKET }}
+          TF_STATE_KEY: ${{ secrets.TF_STATE_KEY }}
+          TF_STATE_REGION: ${{ secrets.TF_STATE_REGION }}
+          TF_STATE_DYNAMODB_TABLE: ${{ secrets.TF_STATE_DYNAMODB_TABLE }}
+        run: |
+          echo 'bucket         = "'"$TF_STATE_BUCKET"'"' > backend.s3.tfvars
+          echo 'key            = "'"${TF_STATE_KEY:-devops-exam/terraform.tfstate}"'"' >> backend.s3.tfvars
+          echo 'region         = "'"${TF_STATE_REGION:-us-west-1}"'"' >> backend.s3.tfvars
+          echo 'encrypt        = true' >> backend.s3.tfvars
+          echo 'dynamodb_table = "'"$TF_STATE_DYNAMODB_TABLE"'"' >> backend.s3.tfvars
+      
       - name: Terraform Init
         working-directory: terraform
-        run: terraform init
+        run: terraform init -reconfigure -backend-config=backend.s3.tfvars
+      
+      - name: Prepare tfvars for CI
+        working-directory: terraform
+        run: |
+          if [ ! -f environments/prod/terraform.tfvars ]; then
+            cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
+          fi
       
       - name: Terraform Validate
         working-directory: terraform
@@ -60,7 +81,7 @@ jobs:
       - name: Terraform Plan
         if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         working-directory: terraform
-        run: terraform plan -out=tfplan
+        run: terraform plan -var-file=environments/prod/terraform.tfvars -out=tfplan
       
       - name: Terraform Apply
         if: github.event.inputs.terraform_action == 'apply'
@@ -70,7 +91,7 @@ jobs:
       - name: Terraform Destroy
         if: github.event.inputs.terraform_action == 'destroy'
         working-directory: terraform
-        run: terraform destroy -auto-approve
+        run: terraform destroy -var-file=environments/prod/terraform.tfvars -auto-approve
       
       - name: Output Terraform Outputs
         if: github.event.inputs.terraform_action == 'apply'
