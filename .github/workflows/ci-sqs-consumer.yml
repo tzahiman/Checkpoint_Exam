@@ -82,11 +82,11 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         working-directory: microservices/sqs-consumer
         run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:$IMAGE_TAG .
-          docker tag {{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:$IMAGE_TAG ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:latest
-          docker push ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:$IMAGE_TAG
+          docker build -t ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{env.IMAGE_TAG}} .
+          docker tag {{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{env.IMAGE_TAG}} ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:latest
+          docker push ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{env.IMAGE_TAG}}
           docker push ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:latest
-          echo "image=${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:$IMAGE_TAG" >> $GITHUB_OUTPUT
+          echo "image=${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{env.IMAGE_TAG}}" >> $GITHUB_OUTPUT
       
       - name: Output image URI
         run: |
