@@ -50,12 +50,6 @@ variable "sqs_poll_interval" {
   default     = 30
 }
 
-variable "api_token" {
-  description = "API token for authentication (will be stored in SSM)"
-  type        = string
-  sensitive   = true
-}
-
 variable "enable_monitoring" {
   description = "Enable Prometheus and Grafana monitoring"
   type        = bool

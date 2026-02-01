@@ -30,13 +30,20 @@ module "sqs" {
   environment  = var.environment
 }
 
-# SSM Module
+# Generate API auth secret (no secrets in code; generated at apply time)
+resource "random_password" "api_auth" {
+  length           = 32
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+# SSM Module (stores generated secret in Parameter Store)
 module "ssm" {
   source = "./modules/ssm"
 
-  project_name = var.project_name
-  environment  = var.environment
-  api_token    = var.api_token
+  project_name   = var.project_name
+  environment    = var.environment
+  api_auth_value = random_password.api_auth.result
 }
 
 # ECR Module

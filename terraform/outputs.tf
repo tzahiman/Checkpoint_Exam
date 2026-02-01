@@ -64,8 +64,14 @@ output "ecr_sqs_consumer_repository_url" {
 }
 
 output "ssm_token_parameter_name" {
-  description = "SSM parameter name for API token"
+  description = "SSM parameter name for API auth"
   value       = module.ssm.api_token_parameter_name
+}
+
+output "api_auth_value" {
+  description = "Generated API auth value (use in Authorization header or request body); retrieve once after apply"
+  value       = random_password.api_auth.result
+  sensitive   = true
 }
 
 output "api_endpoint" {

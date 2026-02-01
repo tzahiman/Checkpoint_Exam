@@ -8,8 +8,8 @@ variable "environment" {
   type        = string
 }
 
-variable "api_token" {
-  description = "API token value"
+variable "api_auth_value" {
+  description = "API auth value (e.g. from random_password); stored in SSM"
   type        = string
   sensitive   = true
 }

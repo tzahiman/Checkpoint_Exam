@@ -1,9 +1,7 @@
+# S3 backend - run scripts/bootstrap-backend.sh once to create bucket + DynamoDB table,
+# then: terraform init -reconfigure -backend-config=backend.s3.tfvars
 terraform {
   backend "s3" {
-    bucket         = "your-terraform-state-bucket" # Update this
-    key            = "devops-exam/terraform.tfstate"
-    region         = "us-west-1"
-    encrypt        = true
-    dynamodb_table = "terraform-state-lock" # Optional: for state locking
+    # bucket, key, region, dynamodb_table, encrypt supplied via -backend-config=backend.s3.tfvars
   }
 }
