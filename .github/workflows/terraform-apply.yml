@@ -53,13 +53,6 @@ jobs:
         working-directory: terraform
         run: terraform init
       
-      - name: Prepare tfvars for CI
-        working-directory: terraform
-        run: |
-          if [ ! -f environments/${{ inputs.environment }}/terraform.tfvars ]; then
-            cp environments/${{ inputs.environment }}/terraform.tfvars.example environments/${{ inputs.environment }}/terraform.tfvars
-            echo "⚠️  Please edit terraform/environments/${{ inputs.environment }}/terraform.tfvars with your configuration"
-          fi
       
       - name: Terraform Validate
         working-directory: terraform
