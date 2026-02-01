@@ -4,12 +4,25 @@ Unit tests for API service
 
 import pytest
 import json
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, PropertyMock
 from fastapi.testclient import TestClient
 from app.main import app, validate_token, validate_email_data, publish_to_sqs
 from app.main import EmailData, EmailRequest
+from pydantic import ValidationError
 
 client = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def reset_auth_cache():
+    """Reset the auth cache before each test to prevent cross-test contamination."""
+    import app.main
+    app.main._auth_cache = None
+    app.main._auth_cache_time = 0
+    yield
+    # Optionally reset again after the test if needed, though usually not necessary for global state.
+    app.main._auth_cache = None
+    app.main._auth_cache_time = 0
 
 
 @pytest.fixture
@@ -98,10 +111,9 @@ class TestEmailDataValidation:
             "email_timestamp": "1693561101"
             # Missing email_content
         }
-        email_data = EmailData(**incomplete_data)
-        is_valid, error = validate_email_data(email_data)
-        assert is_valid is False
-        assert "email_content" in error
+        with pytest.raises(ValidationError) as excinfo:
+            EmailData(**incomplete_data)
+        assert "email_content" in str(excinfo.value)
     
     def test_validate_email_data_empty_field(self):
         """Test validation with empty field"""
@@ -111,20 +123,20 @@ class TestEmailDataValidation:
             "email_timestamp": "1693561101",
             "email_content": "Content"
         }
-        email_data = EmailData(**data_with_empty)
-        is_valid, error = validate_email_data(email_data)
-        assert is_valid is False
-        assert "email_subject" in error
+        with pytest.raises(ValidationError) as excinfo:
+            EmailData(**data_with_empty)
+        assert "email_subject" in str(excinfo.value)
 
 
 class TestPublishToSQS:
     """Test SQS publishing"""
     
     @patch('app.main.sqs_client')
-    def test_publish_to_sqs_success(self, mock_sqs, valid_email_data, mock_sqs_queue_url):
+    @patch('app.main.SQS_QUEUE_URL', new_callable=PropertyMock) # Patch the global variable
+    def test_publish_to_sqs_success(self, mock_sqs_queue_url_patch, mock_sqs, mock_sqs_queue_url, valid_email_data): # Swapped order
         """Test successful SQS publish"""
-        import os
-        os.environ['SQS_QUEUE_URL'] = mock_sqs_queue_url
+        # Set the return value for the patched SQS_QUEUE_URL
+        mock_sqs_queue_url_patch.return_value = mock_sqs_queue_url
         
         mock_sqs.send_message.return_value = {'MessageId': 'test-msg-id'}
         email_data = EmailData(**valid_email_data)

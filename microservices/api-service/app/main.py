@@ -125,7 +125,7 @@ def validate_email_data(data: EmailData) -> tuple[bool, Optional[str]]:
     Returns (is_valid, error_message)
     """
     required_fields = ['email_subject', 'email_sender', 'email_timestamp', 'email_content']
-    data_dict = data.dict()
+    data_dict = data.model_dump()
     
     missing_fields = []
     for field in required_fields:
@@ -147,7 +147,7 @@ def publish_to_sqs(data: EmailData) -> bool:
         return False
     
     try:
-        message_body = json.dumps(data.dict())
+        message_body = json.dumps(data.model_dump())
         response = sqs_client.send_message(
             QueueUrl=SQS_QUEUE_URL,
             MessageBody=message_body,
