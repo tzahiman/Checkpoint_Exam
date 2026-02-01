@@ -21,9 +21,6 @@ on:
         description: 'Docker image tag to build'
         required: false
         default: 'latest'
-env:
-  AWS_REGION: us-west-1
-  ECR_REPOSITORY: devops-exam-api-service
 
 jobs:
   test:
