@@ -10,5 +10,5 @@ output "bucket_arn" {
 
 output "bucket_name" {
   description = "S3 bucket name"
-  value       = aws_s3_bucket.main.id
+  value       = aws_s3_bucket.main.bucket
 }

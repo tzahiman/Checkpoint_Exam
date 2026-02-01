@@ -55,3 +55,9 @@ variable "enable_monitoring" {
   type        = bool
   default     = true
 }
+
+variable "iam_user_name" {
+  description = "IAM user name to attach the S3 public access policy to"
+  type        = string
+  default     = "avanan-candidate-2"
+}
