@@ -56,8 +56,9 @@ jobs:
       - name: Prepare tfvars for CI
         working-directory: terraform
         run: |
-          if [ ! -f environments/prod/terraform.tfvars ]; then
-            cp environments/prod/terraform.tfvars.example environments/prod/terraform.tfvars
+          if [ ! -f environments/${{ inputs.environment }}/terraform.tfvars ]; then
+            cp environments/${{ inputs.environment }}/terraform.tfvars.example environments/${{ inputs.environment }}/terraform.tfvars
+            echo "⚠️  Please edit terraform/environments/${{ inputs.environment }}/terraform.tfvars with your configuration"
           fi
       
       - name: Terraform Validate
@@ -67,7 +68,7 @@ jobs:
       - name: Terraform Plan
         if: github.event.inputs.terraform_action == 'plan' || github.event.inputs.terraform_action == 'apply'
         working-directory: terraform
-        run: terraform plan -var-file=environments/prod/terraform.tfvars -out=tfplan
+        run: terraform plan -var-file=environments/${{ inputs.environment }}/terraform.tfvars -out=tfplan
       
       - name: Terraform Apply
         if: github.event.inputs.terraform_action == 'apply'
