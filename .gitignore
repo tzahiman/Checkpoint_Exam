@@ -2,10 +2,7 @@
 *.tfstate
 *.tfstate.*
 .terraform/
-*.tfvars
-!terraform.tfvars.example
-!**/terraform.tfvars.example
-!**/backend.s3.tfvars.example
+
 
 # Python
 __pycache__/
