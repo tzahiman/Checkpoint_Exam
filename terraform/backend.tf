@@ -1,7 +1,11 @@
-# S3 backend - run scripts/bootstrap-backend.sh once to create bucket + DynamoDB table,
-# then: terraform init -reconfigure -backend-config=backend.s3.tfvars
+# S3 backend configuration - inline values from backend.s3.tfvars
+# No longer requires -backend-config flag when running terraform init
 terraform {
   backend "s3" {
-    # bucket, key, region, dynamodb_table, encrypt supplied via -backend-config=backend.s3.tfvars
+    bucket         = "devops-exam-terraform-state-371670420772"
+    key            = "devops-exam/terraform.tfstate"
+    region         = "us-west-1"
+    encrypt        = true
+    dynamodb_table = "devops-exam-terraform-lock"
   }
 }

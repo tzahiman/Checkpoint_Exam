@@ -66,7 +66,62 @@ This project implements a complete DevOps solution with two microservices deploy
 5. Python 3.9+
 6. GitHub repository (public for exam submission)
 
-## Setup Instructions
+## Deployment
+
+### CI/CD Secrets
+
+The following secrets are required for the CI/CD pipelines. Here's how to obtain them:
+
+*   **`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`**:
+    These are credentials for an IAM user with programmatic access. It is recommended to create a dedicated IAM user for CI/CD purposes with the necessary permissions.
+    *   **How to get**:
+        Use the AWS CLI to create an access key for an IAM user.
+        `aws iam create-access-key --user-name <your-ci-cd-iam-user>`
+        Make sure to save the `AccessKeyId` and `SecretAccessKey` from the output, as they will only be shown once.
+
+*   **`AWS_REGION`**:
+    The AWS region where your resources are deployed (e.g., `us-east-1`, `eu-west-2`).
+    *   **How to get**:
+        1.  Check your AWS CLI configuration: `aws configure get region`
+        2.  Refer to your Terraform configuration files (e.g., `terraform/main.tf` or `terraform/variables.tf`) for the configured region.
+
+*   **`ECR_REPOSITORY_API`**:
+    The full URI for your Amazon Elastic Container Registry (ECR) repository for the API service.
+    *   **How to get**:
+        `terraform output ecr_api_repository_url`
+        Alternatively, using AWS CLI:
+        `aws ecr describe-repositories --repository-names api-service --query 'repositories[0].repositoryUri' --output text`
+
+*   **`ECR_REPOSITORY_SQS_CONSUMER`**:
+    The full URI for your Amazon Elastic Container Registry (ECR) repository for the SQS consumer.
+    *   **How to get**:
+        `terraform output ecr_sqs_consumer_repository_url`
+        Alternatively, using AWS CLI:
+        `aws ecr describe-repositories --repository-names sqs-consumer --query 'repositories[0].repositoryUri' --output text`
+
+*   **`ECS_CLUSTER_NAME`**:
+    The name of your Amazon Elastic Container Service (ECS) cluster.
+    *   **How to get**:
+        `terraform output ecs_cluster_id`
+        Alternatively, using AWS CLI:
+        `aws ecs list-clusters --query 'clusterArns[]' --output text`
+        (The cluster name is the last part of the ARN, e.g., `arn:aws:ecs:REGION:ACCOUNT_ID:cluster/YOUR_CLUSTER_NAME`).
+
+*   **`ECS_SERVICE_API_NAME`**:
+    The name of the ECS service running your API application within your ECS cluster.
+    *   **How to get**:
+        `terraform output api_service_name`
+        Alternatively, using AWS CLI:
+        `aws ecs list-services --cluster <your-cluster-name> --query 'serviceArns[]' --output text`
+        (The service name is the last part of the ARN, e.g., `arn:aws:ecs:REGION:ACCOUNT_ID:service/YOUR_CLUSTER_NAME/YOUR_SERVICE_NAME`).
+
+*   **`ECS_SERVICE_SQS_CONSUMER_NAME`**:
+    The name of the ECS service running your SQS consumer application within your ECS cluster.
+    *   **How to get**:
+        `terraform output sqs_consumer_service_name`
+        Alternatively, using AWS CLI:
+        `aws ecs list-services --cluster <your-cluster-name> --query 'serviceArns[]' --output text`
+        (The service name is the last part of the ARN, e.g., `arn:aws:ecs:REGION:ACCOUNT_ID:service/YOUR_CLUSTER_NAME/YOUR_SERVICE_NAME`).
 
 ### 1. Configure AWS Credentials
 
@@ -81,10 +136,10 @@ Create the S3 bucket and DynamoDB table for Terraform state, then init with the 
 ```bash
 ./scripts/bootstrap-backend.sh
 cd terraform
-terraform init -reconfigure -backend-config=backend.s3.tfvars
+terraform init 
 ```
 
-The script creates `terraform/backend.s3.tfvars` (gitignored). To use a different region or names, set env vars before running the script: `AWS_REGION=us-west-1 BUCKET_PREFIX=devops-exam-terraform-state ./scripts/bootstrap-backend.sh`.
+The script creates terraform backend s3 bucket and lock table. To use a different region or names, set env vars before running the script: `AWS_REGION=us-west-1 BUCKET_PREFIX=devops-exam-terraform-state ./scripts/bootstrap-backend.sh`.
 
 ### 3. Set Terraform Variables
 
@@ -96,7 +151,7 @@ If you already ran the bootstrap (step 2):
 
 ```bash
 cd terraform
-terraform init -reconfigure -backend-config=backend.s3.tfvars
+terraform init
 terraform plan -var-file=environments/prod/terraform.tfvars
 terraform apply -var-file=environments/prod/terraform.tfvars
 ```
