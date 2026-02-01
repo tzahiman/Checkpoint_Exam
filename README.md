@@ -89,15 +89,11 @@ The following secrets are required for the CI/CD pipelines. Here's how to obtain
     The full URI for your Amazon Elastic Container Registry (ECR) repository for the API service.
     *   **How to get**:
         `terraform output ecr_api_repository_url`
-        Alternatively, using AWS CLI:
-        `aws ecr describe-repositories --repository-names api-service --query 'repositories[0].repositoryUri' --output text`
 
 *   **`ECR_REPOSITORY_SQS_CONSUMER`**:
     The full URI for your Amazon Elastic Container Registry (ECR) repository for the SQS consumer.
     *   **How to get**:
         `terraform output ecr_sqs_consumer_repository_url`
-        Alternatively, using AWS CLI:
-        `aws ecr describe-repositories --repository-names sqs-consumer --query 'repositories[0].repositoryUri' --output text`
 
 *   **`ECS_CLUSTER_NAME`**:
     The name of your Amazon Elastic Container Service (ECS) cluster.
