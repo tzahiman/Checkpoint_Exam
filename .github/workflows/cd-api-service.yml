@@ -17,7 +17,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to ECS
+    name: "Deploy to ECS"
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     
@@ -36,7 +36,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-    - name: Determine image tag
+      - name: Determine image tag
         id: image-tag
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
