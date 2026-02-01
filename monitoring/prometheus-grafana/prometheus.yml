@@ -1,0 +1,30 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'devops-exam'
+    environment: 'prod'
+
+scrape_configs:
+  # API Service metrics
+  - job_name: 'api-service'
+    static_configs:
+      - targets: ['api-service:9090']
+        labels:
+          service: 'api-service'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # SQS Consumer metrics
+  - job_name: 'sqs-consumer'
+    static_configs:
+      - targets: ['sqs-consumer:9090']
+        labels:
+          service: 'sqs-consumer'
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
