@@ -35,13 +35,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
       
-      - name: Get ECR repository URI
-        id: ecr-repo
-        run: |
-          ECR_URI=$(aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }} --query 'repositories[0].repositoryUri' --output text)
-          echo "repository_uri=$ECR_URI" >> $GITHUB_OUTPUT
-          echo "Repository URI: $ECR_URI"
-      
       - name: Determine image tag
         id: image-tag
         run: |
@@ -65,7 +58,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: sqs-consumer
-          image: ${{ steps.ecr-repo.outputs.repository_uri }}:${{ steps.image-tag.outputs.image_tag }}
+          image: ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{ env.IMAGE_TAG }}
       
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
