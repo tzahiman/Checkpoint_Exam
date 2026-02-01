@@ -15,7 +15,12 @@ on:
     paths:
       - 'microservices/sqs-consumer/**'
       - '.github/workflows/ci-sqs-consumer.yml'
-
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Docker image tag to build'
+        required: false
+        default: 'latest'
 env:
   AWS_REGION: us-west-1
   ECR_REPOSITORY: devops-exam-sqs-consumer
