@@ -171,17 +171,13 @@ In your GitHub repository, add the following secrets:
 - `AWS_ACCESS_KEY_ID`: Your AWS access key
 - `AWS_SECRET_ACCESS_KEY`: Your AWS secret key
 - `AWS_REGION`: AWS region (e.g., us-west-1)
-- `ECR_REPOSITORY_API`: ECR repository for API service
-- `ECR_REPOSITORY_SQS_CONSUMER`: ECR repository for SQS consumer
 - `ECS_CLUSTER_NAME`: ECS cluster name
 - `ECS_SERVICE_API_NAME`: ECS service name for API
-- `ECS_SERVICE_SQS_CONSUMER_NAME`: ECS service name for SQS consumer
+- `ECS_SERVICE_SQS_CONSUMER_NAME`: ECS service name for SQS consumer   
 
-**For Terraform workflow (terraform-apply.yml):**
-- `TF_STATE_BUCKET`: S3 bucket name for Terraform state (from `./scripts/bootstrap-backend.sh` output or `terraform/backend.s3.tfvars`)
-- `TF_STATE_DYNAMODB_TABLE`: DynamoDB table name for state lock (e.g. `devops-exam-terraform-lock`)
-- `TF_STATE_REGION` (optional): Same as `AWS_REGION` if not set
-- `TF_STATE_KEY` (optional): State file key, default `devops-exam/terraform.tfstate`
+**Add the following as GitHub Variables**  
+- `ECR_REPOSITORY_API`: ECR repository for API service
+- `ECR_REPOSITORY_SQS_CONSUMER`: ECR repository for SQS consumer  
 
 ### 6. Build and Push Docker Images
 
@@ -304,7 +300,3 @@ terraform destroy -var-file=environments/prod/terraform.tfvars
 - Check CloudWatch Logs
 - Verify SQS queue permissions
 - Ensure S3 bucket permissions are correct
-
-## License
-
-This project is created for educational/exam purposes.

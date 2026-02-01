@@ -39,9 +39,11 @@ jobs:
         id: image-tag
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            IMAGE_TAG="${{ github.event.inputs.image_tag }}"
+            # Use input if provided, otherwise default to 'latest'
+            IMAGE_TAG="${{ github.event.inputs.image_tag || 'latest' }}"
           else
-            IMAGE_TAG="${{ github.sha }}"
+            # Use the SHA of the CI run that triggered this deploy
+            IMAGE_TAG="${{ github.event.workflow_run.head_sha }}"
           fi
           echo "image_tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
           echo "Deploying image tag: $IMAGE_TAG"
@@ -58,7 +60,7 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: sqs-consumer
-          image: ${{ vars.ECR_REPOSITORY_SQS_CONSUMER }}:${{ env.IMAGE_TAG }}
+          image: ${{ vars.ECR_REPOSITORY_SQS_CONSUMER }}:${{ steps.image-tag.outputs.image_tag }}
       
       - name: Deploy to Amazon ECS
         uses: aws-actions/amazon-ecs-deploy-task-definition@v2
