@@ -46,7 +46,7 @@ This project implements a complete DevOps solution for the CheckPoint exam, feat
 ### Bonus Requirements
 
 1. ✅ **Tests**: Comprehensive unit tests for both services
-2. ✅ **Monitoring**: Prometheus and Grafana setup
+2. ✅ **Monitoring**: CloudWatch
 
 ## Project Structure
 

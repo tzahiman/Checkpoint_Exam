@@ -8,6 +8,11 @@ output "queue_arn" {
   value       = aws_sqs_queue.email_queue.arn
 }
 
+output "queue_name" {
+  description = "SQS queue name"
+  value       = aws_sqs_queue.email_queue.name
+}
+
 output "dlq_url" {
   description = "Dead Letter Queue URL"
   value       = aws_sqs_queue.dlq.id
