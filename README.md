@@ -70,7 +70,7 @@ This project implements a complete DevOps solution with two microservices deploy
 
 ### CI/CD Secrets
 
-The following secrets are required for the CI/CD pipelines. Here's how to obtain them:
+The following secrets and vars are required for the CI/CD pipelines. Here's how to obtain them:
 
 *   **`AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`**:
     These are credentials for an IAM user with programmatic access. It is recommended to create a dedicated IAM user for CI/CD purposes with the necessary permissions.
@@ -86,11 +86,13 @@ The following secrets are required for the CI/CD pipelines. Here's how to obtain
         2.  Refer to your Terraform configuration files (e.g., `terraform/main.tf` or `terraform/variables.tf`) for the configured region.
 
 *   **`ECR_REPOSITORY_API`**:
+    Configure as Github Variable.
     The full URI for your Amazon Elastic Container Registry (ECR) repository for the API service.
     *   **How to get**:
         `terraform output ecr_api_repository_url`
 
 *   **`ECR_REPOSITORY_SQS_CONSUMER`**:
+    Configure as Github Variable.
     The full URI for your Amazon Elastic Container Registry (ECR) repository for the SQS consumer.
     *   **How to get**:
         `terraform output ecr_sqs_consumer_repository_url`

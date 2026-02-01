@@ -81,11 +81,11 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
         working-directory: microservices/api-service
         run: |
-          docker build -t ${{ secrets.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }} .
-          docker tag ${{ secrets.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }} ${{ secrets.ECR_REPOSITORY_API }}:latest
-          docker push ${{ secrets.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }}
-          docker push ${{ secrets.ECR_REPOSITORY_API }}:latest
-          echo "image=${{ secrets.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
+          docker build -t ${{ vars.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }} .
+          docker tag ${{ vars.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }} ${{ vars.ECR_REPOSITORY_API }}:latest
+          docker push ${{ vars.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }}
+          docker push ${{ vars.ECR_REPOSITORY_API }}:latest
+          echo "image=${{ vars.ECR_REPOSITORY_API }}:${{ env.IMAGE_TAG }}" >> $GITHUB_OUTPUT
       
       - name: Output image URI
         run: |

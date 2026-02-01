@@ -58,10 +58,10 @@ jobs:
         with:
           task-definition: task-definition.json
           container-name: sqs-consumer
-          image: ${{ secrets.ECR_REPOSITORY_SQS_CONSUMER }}:${{ env.IMAGE_TAG }}
+          image: ${{ vars.ECR_REPOSITORY_SQS_CONSUMER }}:${{ env.IMAGE_TAG }}
       
       - name: Deploy to Amazon ECS
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
           service: ${{ secrets.ECS_SERVICE_SQS_CONSUMER_NAME }}
